@@ -1,0 +1,17 @@
+[package]
+name = "manifestation"
+description = "A command line tool for packaging GDWeave mods"
+authors = ["NotNite <hi@notnite.com>"]
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.91"
+directories = "5.0.1"
+dunce = "1.0.5"
+inquire = "0.7.5"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+toml = "0.8.19"
+zip = "2.2.0"
