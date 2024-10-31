@@ -67,21 +67,25 @@ pub struct ThunderstoreManifest {
     dependencies: Vec<String>,
 }
 
-fn zip_dir(zip: &mut ZipWriter<std::fs::File>, path: &Path, prefix: &Path) -> anyhow::Result<()> {
-    let ignore = vec!["github.zip", "thunderstore.zip"];
+fn zip_dir(
+    zip: &mut ZipWriter<std::fs::File>,
+    path: &Path,
+    prefix: &Path,
+    ignore: &[String],
+) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
 
         if let Some(file_name) = path.file_name() {
-            if ignore.contains(&file_name.to_str().unwrap()) {
+            if ignore.contains(&file_name.to_string_lossy().to_string()) {
                 continue;
             }
         }
 
         let relative_path = path.strip_prefix(prefix)?;
         if path.is_dir() {
-            zip_dir(zip, &path, prefix)?;
+            zip_dir(zip, &path, prefix, ignore)?;
         } else {
             zip.start_file_from_path(relative_path, SimpleFileOptions::default())?;
             zip.write_all(&std::fs::read(&path)?)?;
@@ -238,14 +242,16 @@ application/modify_resources=false
         std::fs::copy(&extra_file, mod_dir.join(extra_file.file_name().unwrap()))?;
     }
 
+    let ignore = vec!["thunderstore.zip".to_string(), format!("{}.zip", cfg.id)];
+
     let github_zip_writer = std::fs::File::create(work_dir.join(format!("{}.zip", cfg.id)))?;
     let mut github_zip = ZipWriter::new(github_zip_writer);
-    zip_dir(&mut github_zip, &mod_dir, &mod_dir)?;
+    zip_dir(&mut github_zip, &mod_dir, &mod_dir, &ignore)?;
     github_zip.finish()?;
 
     let thunderstore_zip_writer = std::fs::File::create(work_dir.join("thunderstore.zip"))?;
     let mut thunderstore_zip = ZipWriter::new(thunderstore_zip_writer);
-    zip_dir(&mut thunderstore_zip, &work_dir, &work_dir)?;
+    zip_dir(&mut thunderstore_zip, &work_dir, &work_dir, &ignore)?;
     thunderstore_zip.finish()?;
 
     Ok(())
