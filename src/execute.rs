@@ -234,6 +234,11 @@ application/modify_resources=false
     }
 
     let icon = cfg_dir.join(cfg.icon);
+    let image = image::open(&icon)?;
+    if image.width() != 256 || image.height() != 256 {
+        anyhow::bail!("Icon must be 256x256");
+    }
+
     std::fs::copy(&icon, work_dir.join("icon.png"))?;
     std::fs::copy(&icon, mod_dir.join("icon.png"))?;
 
