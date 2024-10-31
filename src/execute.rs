@@ -21,6 +21,9 @@ pub struct ModConfig {
 
     #[serde(default)]
     dependencies: Vec<ModDependency>,
+
+    #[serde(default)]
+    extra_files: Vec<String>,
 }
 
 #[derive(Deserialize, Debug, Default)]
@@ -229,6 +232,11 @@ application/modify_resources=false
     let icon = cfg_dir.join(cfg.icon);
     std::fs::copy(&icon, work_dir.join("icon.png"))?;
     std::fs::copy(&icon, mod_dir.join("icon.png"))?;
+
+    for extra_file in cfg.extra_files {
+        let extra_file = cfg_dir.join(extra_file);
+        std::fs::copy(&extra_file, work_dir.join(extra_file.file_name().unwrap()))?;
+    }
 
     let github_zip_writer = std::fs::File::create(work_dir.join("github.zip"))?;
     let mut github_zip = ZipWriter::new(github_zip_writer);
