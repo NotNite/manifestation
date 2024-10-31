@@ -219,7 +219,7 @@ application/modify_resources=false
             .collect(),
     };
     std::fs::write(
-        work_dir.join("thunderstore.json"),
+        work_dir.join("manifest.json"),
         serde_json::to_string_pretty(&thunderstore_manifest)?,
     )?;
 
