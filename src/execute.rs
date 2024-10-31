@@ -238,7 +238,7 @@ application/modify_resources=false
         std::fs::copy(&extra_file, mod_dir.join(extra_file.file_name().unwrap()))?;
     }
 
-    let github_zip_writer = std::fs::File::create(work_dir.join("github.zip"))?;
+    let github_zip_writer = std::fs::File::create(work_dir.join(format!("{}.zip", cfg.id)))?;
     let mut github_zip = ZipWriter::new(github_zip_writer);
     zip_dir(&mut github_zip, &mod_dir, &mod_dir)?;
     github_zip.finish()?;
