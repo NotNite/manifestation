@@ -235,7 +235,7 @@ application/modify_resources=false
 
     for extra_file in cfg.extra_files {
         let extra_file = cfg_dir.join(extra_file);
-        std::fs::copy(&extra_file, work_dir.join(extra_file.file_name().unwrap()))?;
+        std::fs::copy(&extra_file, mod_dir.join(extra_file.file_name().unwrap()))?;
     }
 
     let github_zip_writer = std::fs::File::create(work_dir.join("github.zip"))?;
