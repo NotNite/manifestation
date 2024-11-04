@@ -165,6 +165,7 @@ application/modify_resources=false
         }
 
         let status = std::process::Command::new(godot_path)
+            .arg("--no-window")
             .arg("--path")
             .arg(&godot.parent().expect("Failed to get parent directory"))
             .arg("--export-pack")
