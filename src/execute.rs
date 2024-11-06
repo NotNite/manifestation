@@ -170,7 +170,7 @@ application/modify_resources=false
             .arg(&godot.parent().expect("Failed to get parent directory"))
             .arg("--export-pack")
             .arg("manifestation")
-            .arg(&mod_dir.join(&cfg.id).with_extension("pck"))
+            .arg(&mod_dir.join(format!("{}.pck", cfg.id)))
             .status()?;
 
         if !status.success() {

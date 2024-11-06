@@ -3,7 +3,7 @@ name = "manifestation"
 description = "A command line tool for packaging GDWeave mods"
 authors = ["NotNite <hi@notnite.com>"]
 license = "MIT"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 
 [dependencies]
