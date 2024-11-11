@@ -28,6 +28,12 @@ icon = "icon.png"
 readme = "README.md"
 changelog = "CHANGELOG.md" # optional
 
+ # optional
+extra_files = [
+  "example_gdnative_lib.dll",
+  "LICENSE"
+]
+
 # both are optional here, pick what you want
 [project]
 csharp = "./ExampleMod/ExampleMod.csproj"
