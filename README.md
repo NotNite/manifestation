@@ -31,7 +31,7 @@ changelog = "CHANGELOG.md" # optional
  # optional
 extra_files = [
   "example_gdnative_lib.dll",
-  "example.txt"
+  "LICENSE"
 ]
 
 # both are optional here, pick what you want
