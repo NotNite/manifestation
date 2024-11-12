@@ -288,6 +288,12 @@ application/modify_resources=false
             })
             .join(&cfg.id);
 
+        if Path::exists(dest.as_ref()) {
+            for entry in std::fs::read_dir(&dest)? {
+                let entry = entry?;
+                fs::remove_file(entry.path())?;
+            }
+        }
         copy_dir_all(mod_dir, dest).expect("Failed to copy files to copy path.");
     }
 
