@@ -49,3 +49,10 @@ thunderstore_version = "Sulayre-Lure-3.1.3"
 ```
 
 Then either drag the config file onto the executable or run it from the command line.
+
+Manifestation has a few command line arguments:
+```shell
+-c, --copy                   Enable copying the mod to another dir. Defaults to your GDWeave/mods/ directory
+    --copy-path <COPY_PATH>  Optional destination for manifestation to copy to
+
+```
