@@ -1,6 +1,8 @@
 use crate::config::get_config;
+use dircpy::CopyBuilder;
 use serde::{Deserialize, Serialize};
-use std::{io::Write, path::Path};
+use std::path::Path;
+use std::{io::Write, path::PathBuf};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
 #[derive(Deserialize, Debug)]
@@ -95,7 +97,7 @@ fn zip_dir(
     Ok(())
 }
 
-pub fn process(cfg_path: &Path) -> anyhow::Result<()> {
+pub fn process(cfg_path: &Path, copy: bool, copy_path: Option<PathBuf>) -> anyhow::Result<()> {
     let manifestation_config = get_config().unwrap_or_default();
 
     let cfg_dir = dunce::canonicalize(cfg_path.parent().expect("Failed to get parent directory"))?;
@@ -119,6 +121,7 @@ pub fn process(cfg_path: &Path) -> anyhow::Result<()> {
         let csharp = cfg_dir.join(&csharp);
         let gdweave_path = manifestation_config
             .gdweave_path
+            .as_ref()
             .expect("No GDWeave path provided - did you run the setup?");
 
         let status = std::process::Command::new("dotnet")
@@ -259,6 +262,21 @@ application/modify_resources=false
     let mut thunderstore_zip = ZipWriter::new(thunderstore_zip_writer);
     zip_dir(&mut thunderstore_zip, &work_dir, &work_dir, &ignore)?;
     thunderstore_zip.finish()?;
+
+    if copy {
+        let dest = copy_path.unwrap_or_else(|| {
+            manifestation_config
+                .gdweave_path
+                .expect("No GDWeave path provided - did you run the setup?")
+                .join("mods")
+                .join(&cfg.id)
+        });
+
+        CopyBuilder::new(mod_dir, dest.join(&cfg.id))
+            .overwrite_if_newer(true)
+            .run()
+            .expect("Failed to copy files to copy path.");
+    }
 
     Ok(())
 }

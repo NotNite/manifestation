@@ -8,6 +8,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.91"
+clap = { version = "4.5.20", features = ["derive"] }
+dircpy = "0.3.19"
 directories = "5.0.1"
 dunce = "1.0.5"
 image = "0.25.4"
