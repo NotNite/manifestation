@@ -1,6 +1,6 @@
 use crate::config::get_config;
-use dircpy::CopyBuilder;
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::Path;
 use std::{io::Write, path::PathBuf};
 use zip::{write::SimpleFileOptions, ZipWriter};
@@ -67,6 +67,21 @@ pub struct ThunderstoreManifest {
     website_url: String,
     description: String,
     dependencies: Vec<String>,
+}
+
+// https://stackoverflow.com/a/65192210
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
 }
 
 fn zip_dir(
@@ -264,18 +279,16 @@ application/modify_resources=false
     thunderstore_zip.finish()?;
 
     if copy {
-        let dest = copy_path.unwrap_or_else(|| {
-            manifestation_config
-                .gdweave_path
-                .expect("No GDWeave path provided - did you run the setup?")
-                .join("mods")
-                .join(&cfg.id)
-        });
+        let dest = copy_path
+            .unwrap_or_else(|| {
+                manifestation_config
+                    .gdweave_path
+                    .expect("No GDWeave path provided - did you run the setup?")
+                    .join("mods")
+            })
+            .join(&cfg.id);
 
-        CopyBuilder::new(mod_dir, dest.join(&cfg.id))
-            .overwrite_if_newer(true)
-            .run()
-            .expect("Failed to copy files to copy path.");
+        copy_dir_all(mod_dir, dest).expect("Failed to copy files to copy path.");
     }
 
     Ok(())
