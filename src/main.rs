@@ -4,14 +4,15 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[clap(version)]
 pub struct Args {
-    // Path to manifestation.toml
+    /// Path to manifestation.toml
     toml_path: Option<PathBuf>,
 
     #[clap(long, short, action)]
+    /// Enable copying the mod to another dir. Defaults to your GDWeave/mods/ directory.
     copy: bool,
 
     #[clap(long)]
-    // Destination for manifestation to copy to
+    /// Optional destination for manifestation to copy to
     copy_path: Option<PathBuf>,
 }
 
