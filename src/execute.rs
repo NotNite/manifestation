@@ -76,9 +76,12 @@ fn zip_dir(
     for entry in std::fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
-
         if let Some(file_name) = path.file_name() {
-            if ignore.contains(&file_name.to_string_lossy().to_string()) {
+            // a bit of a hacky way of stripping unnecessary dll compilation files from the zips, hopefully that's ok!
+            let lossy_string = file_name.to_string_lossy().to_string();
+            if ignore.contains(&lossy_string)
+                || lossy_string.ends_with(".deps.json")
+                || lossy_string.ends_with(".pdb") {
                 continue;
             }
         }
