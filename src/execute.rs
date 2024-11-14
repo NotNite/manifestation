@@ -1,6 +1,8 @@
 use crate::config::get_config;
 use serde::{Deserialize, Serialize};
-use std::{io::Write, path::Path};
+use std::fs;
+use std::path::Path;
+use std::{io::Write, path::PathBuf};
 use zip::{write::SimpleFileOptions, ZipWriter};
 
 #[derive(Deserialize, Debug)]
@@ -67,6 +69,21 @@ pub struct ThunderstoreManifest {
     dependencies: Vec<String>,
 }
 
+// https://stackoverflow.com/a/65192210
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}
+
 fn zip_dir(
     zip: &mut ZipWriter<std::fs::File>,
     path: &Path,
@@ -95,7 +112,7 @@ fn zip_dir(
     Ok(())
 }
 
-pub fn process(cfg_path: &Path) -> anyhow::Result<()> {
+pub fn process(cfg_path: &Path, copy: bool, copy_path: Option<PathBuf>) -> anyhow::Result<()> {
     let manifestation_config = get_config().unwrap_or_default();
 
     let cfg_dir = dunce::canonicalize(cfg_path.parent().expect("Failed to get parent directory"))?;
@@ -119,6 +136,7 @@ pub fn process(cfg_path: &Path) -> anyhow::Result<()> {
         let csharp = cfg_dir.join(&csharp);
         let gdweave_path = manifestation_config
             .gdweave_path
+            .as_ref()
             .expect("No GDWeave path provided - did you run the setup?");
 
         let status = std::process::Command::new("dotnet")
@@ -259,6 +277,25 @@ application/modify_resources=false
     let mut thunderstore_zip = ZipWriter::new(thunderstore_zip_writer);
     zip_dir(&mut thunderstore_zip, &work_dir, &work_dir, &ignore)?;
     thunderstore_zip.finish()?;
+
+    if copy {
+        let dest = copy_path
+            .unwrap_or_else(|| {
+                manifestation_config
+                    .gdweave_path
+                    .expect("No GDWeave path provided - did you run the setup?")
+                    .join("mods")
+            })
+            .join(&cfg.id);
+
+        if Path::exists(dest.as_ref()) {
+            for entry in std::fs::read_dir(&dest)? {
+                let entry = entry?;
+                fs::remove_file(entry.path())?;
+            }
+        }
+        copy_dir_all(mod_dir, dest).expect("Failed to copy files to copy path.");
+    }
 
     Ok(())
 }
